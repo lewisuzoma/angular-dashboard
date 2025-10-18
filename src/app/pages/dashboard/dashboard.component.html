@@ -1,0 +1,40 @@
+<div class="flex h-screen bg-gray-50">
+    <app-sidebar></app-sidebar>
+    
+
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+
+            <section class="overflow-y-auto lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-screen order-2 lg:order-none">
+                <app-text-wrapper [data]="{title: 'Description', content: 'Lorem ipsum dolor sit amet consectetur. Aenean sodales pellentesque gravida nibh et magna faucibus. Dui commodo ut metus amet egestas habitant viverra. Quisque fusce senectus facilisis non diam leo nulla sem pellentesque. Sit in vel sed cursus metus sit fringilla vestibulum.'}"></app-text-wrapper>
+                <app-text-wrapper [data]="{title: 'Extra', content: 'Lorem ipsum dolor sit amet consectetur. Tempus a id adipiscing fames egestas tellus dis pretium tempus. Justo nisl nisl lorem lectus id ornare. Rhoncus in egestas in amet porttitor pellentesque sit. Amet gravida integer velit felis. Eu consectetur interdum auctor sed aliquam. Eu pulvinar accumsan sed id. Duis a aliquam eu quisque commodo lectus. Lectus ipsum velit purus viverra vulputate viverra in nunc nulla. Euismod rhoncus mauris urna orci gravida sagittis netus. Amet mus in vel etiam. Interdum habitant congue massa in etiam sit. Commodo nibh viverra lobortis augue lorem quam lorem suspendisse.'}"></app-text-wrapper>
+               
+                <hr class="text-gray-300"/>
+                <div class="space-y-6 mt-3">
+                    <app-lists></app-lists>
+
+                    <h3 class="text-lg font-semibold my-4 text-gray-700">Lorem Ipsum Dolor Sit</h3>
+
+                    <div class="space-y-2">
+                        @for (card of cardSignal(); track $index) {
+                            <app-card [data]="card" class="block"></app-card>
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <section class="lg:col-span-2 space-y-6 lg:space-y-8 order-1 lg:order-none">
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-6 text-primary">Lorem Lorem Lorem</h2>
+                    <app-flow-diagram></app-flow-diagram>
+
+                    <app-contextual-risk></app-contextual-risk>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    
+</div>

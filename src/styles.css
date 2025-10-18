@@ -1,1 +1,100 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import "tailwindcss";
+@import "./theme/font";
+@import "primeicons/primeicons.css";
+
+
+@theme {
+  --font-family-base: 'PublicSans', sans-serif;
+  --font-size-base: 1rem;
+  --font-weight-regular: 400;
+  --line-height-base: 1.5;
+
+  /* ========================
+    Base Colors
+  ========================= */
+  --color-primary: #16A34A;
+  --color-secondary: #3B82F6; 
+  --color-accent: #F59E0B; 
+  --color-danger: #DC2626; 
+  --color-success: #22C55E; 
+
+  /* ========================
+     Accent / Semantic Colors
+  ========================= */
+  --color-success-50:  #ECFDF5;
+  --color-success-100: #D1FAE5;
+  --color-success-500: #22C55E; 
+  --color-success-700: #15803D;
+
+  --color-warning-50:  #FFFBEB;
+  --color-warning-100: #FEF3C7;
+  --color-warning-500: #F59E0B; 
+  --color-warning-700: #B45309;
+
+  --color-error-50:    #FEF2F2;
+  --color-error-100:   #FECACA;
+  --color-error-500:   #DC2626; 
+  --color-error-700:   #B91C1C;
+
+  --color-info-50:     #EFF6FF;
+  --color-info-100:    #DBEAFE;
+  --color-info-500:    #3B82F6; 
+  --color-info-700:    #1D4ED8;
+
+  /* ========================
+     Neutral / Gray Scale
+  ========================= */
+  --color-gray-50:   #F9FAFB; 
+  --color-gray-100:  #F1F5F9; 
+  --color-gray-200:  #E2E8F0; 
+  --color-gray-300:  #CBD5E1;
+  --color-gray-400:  #94A3B8;
+  --color-gray-500:  #64748B;
+  --color-gray-600:  #475569;
+  --color-gray-700:  #334155;
+  --color-gray-800:  #1E293B;
+  --color-gray-900:  #0F172A;
+
+  /* ========================
+     Backgrounds & Surfaces
+  ========================= */
+  --color-bg-body:        var(--color-gray-50); 
+  --color-bg-surface:     #FFFFFF;               
+  --color-bg-sidebar:     var(--color-gray-100); 
+  --color-bg-hover:       var(--color-gray-200); 
+  --color-bg-active:      var(--color-success-50);
+
+  /* ========================
+     Text Colors
+  ========================= */
+  --color-text-primary:   var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
+  --color-text-muted:     var(--color-gray-400); 
+  --color-text-inverse:   #FFFFFF;               
+
+  /* ========================
+     Borders & Shadows
+  ========================= */
+  --color-border-light:   var(--color-gray-200);
+  --color-border-strong:  var(--color-gray-300);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
+
+html {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-base);
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+} 
+
+* ::-webkit-scrollbar {
+  display: none !important;
+}
