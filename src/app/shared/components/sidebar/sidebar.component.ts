@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
@@ -6,28 +6,35 @@ import { DomSanitizer } from '@angular/platform-browser';
   standalone: true,
   imports: [],
   template: `
-    <div class="flex h-screen">
-      <aside class="bg-white shadow-md flex flex-col justify-between transition-all duration-300 relative"
-        [class.w-20]="isCollapsed()"
-        [class.w-52]="!isCollapsed()">
+    <div class="flex h-screen sticky">
+      <aside class="w-20 md:flex bg-white shadow-md flex flex-col justify-between transition-all duration-300 relative"
+        [class.w-20]="isCollapsed() || isMobileView()"
+        [class.w-62]="!isCollapsed() && !isMobileView()">
         <div>
+          
           <!-- Top Nav Items -->
+          
           <nav class="mt-4 space-y-2">
+            @if(isCollapsed() || isMobileView()) { 
+              <div class="flex justify-center" >
+                <img src="assets/images/logo.jpg" /> 
+              </div>
+            }
             <!-- Menu Item -->
              @for (item of navItems(); let i = $index; track $index) {
                <a href="#" class="flex items-center mx-4 py-3 rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
                 [class.bg-success-50]="item.active"
                 [class.bg-green-50]="item.active"
                 [class.text-green-700]="item.active"
-                [class.justify-center]="isCollapsed()"
-                [class.px-2]="isCollapsed()"
-                [class.px-3]="!isCollapsed()"
+                [class.justify-center]="isCollapsed() || isMobileView()"
+                [class.px-2]="isCollapsed() || isMobileView()"
+                [class.px-3]="!isCollapsed() && !isMobileView()"
                 (click)="setActive(i)">
                 
                 <div class="w-5 h-5 flex items-center justify-center mr-0" [class.md:mr-3]="!isCollapsed()">
                     <div [innerHTML]="saftHTML(item.icon)"></div>
                 </div>
-                <span class="text-sm font-medium transition-opacity duration-200" [class.md:inline]="!isCollapsed()" [class.opacity-0]="isCollapsed()" [class.hidden]="isCollapsed()">{{ item.label }}</span>
+                <span class="text-sm font-medium transition-opacity duration-200" [class.md:inline]="!isCollapsed()" [class.opacity-0]="isCollapsed() || isMobileView()" [class.hidden]="isCollapsed() || isMobileView()">{{ item.label }}</span>
                </a>
              }
 
@@ -39,15 +46,15 @@ import { DomSanitizer } from '@angular/platform-browser';
           <nav class="py-3 space-y-2">
             @for (item of bottomItems(); track $index) {
               <a href="#" class="flex items-center mx-3 py-2 rounded-xl text-gray-500 hover:text-gray-800 hover:bg-gray-50 transition-colors cursor-pointer"
-                 [class.justify-center]="isCollapsed()"
-                 [class.px-2]="isCollapsed()"
-                 [class.px-3]="!isCollapsed()">
+                 [class.justify-center]="isCollapsed() || isMobileView()"
+                 [class.px-2]="isCollapsed() || isMobileView()"
+                 [class.px-3]="!isCollapsed() && !isMobileView()">
                 <!-- Icon -->
-                <div class="w-5 h-5 flex items-center justify-center mr-0" [class.md:mr-3]="!isCollapsed()">
+                <div class="w-5 h-5 flex items-center justify-center mr-0" [class.md:mr-3]="!isCollapsed() && !isMobileView()">
                     <div [innerHTML]="saftHTML(item.icon)"></div>
                 </div>
                 <!-- Label -->
-                <span class="text-sm font-medium transition-opacity duration-200" [class.md:inline]="!isCollapsed()" [class.opacity-0]="isCollapsed()" [class.hidden]="isCollapsed()">{{ item.label }}</span>
+                <span class="text-sm font-medium transition-opacity duration-200" [class.md:inline]="!isCollapsed()" [class.opacity-0]="isCollapsed() ||isMobileView()" [class.hidden]="isCollapsed() || isMobileView()">{{ item.label }}</span>
               </a>
             }
 
@@ -55,7 +62,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 
           <!-- User Profile -->
           <div class="border-t border-gray-100 pt-3">
-            <div class="flex items-center py-2" [class.justify-center]="isCollapsed()" [class.px-3]="!isCollapsed()">
+            <div class="flex items-center py-2" [class.justify-center]="isCollapsed() || isMobileView()" [class.px-3]="!isCollapsed() && !isMobileView()">
               <!-- Avatar -->
               <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -64,7 +71,7 @@ import { DomSanitizer } from '@angular/platform-browser';
               </div>
               
               <!-- User Info and Logout Button -->
-              <div class="flex-grow flex items-center justify-between ml-3" [class.hidden]="isCollapsed()">
+              <div class="flex-grow flex items-center justify-between ml-3" [class.hidden]="isCollapsed() || isMobileView()">
                 <div>
                   <p class="text-sm font-medium text-gray-800">Lorem</p>
                   <p class="text-xs text-gray-500">Lorem</p>
@@ -82,7 +89,7 @@ import { DomSanitizer } from '@angular/platform-browser';
         </div>
         <!-- Collapse Button -->
         <button (click)="toggleCollapse()" class="absolute top-5 right-[-15px] bg-green-700 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer shadow-md">
-          @if (isCollapsed()) {
+          @if (isCollapsed() || isMobileView()) {
             <i class="pi pi-chevron-right text-sm"></i>
           } @else {
             <i class="pi pi-chevron-left text-sm"></i>
@@ -95,7 +102,10 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 export class SidebarComponent {
   isCollapsed = signal(false);
+  isMobile = signal(false);
 
+  isMobileView = computed(() => this.isMobile());
+  
   navItems = signal([
     { label: 'Lorem', icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M10.8333 2.5V7.5H17.5V2.5M10.8333 17.5H17.5V9.16667H10.8333M2.5 17.5H9.16667V12.5H2.5M2.5 10.8333H9.16667V2.5H2.5V10.8333Z" fill="#A3A9B6"/>
@@ -159,6 +169,20 @@ export class SidebarComponent {
 
   private sanitizer = inject(DomSanitizer)
 
+  ngOnInit() {
+    this.checkScreenSize();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', () => this.checkScreenSize());
+    }
+  }
+
+  checkScreenSize() {
+    if (typeof window !== 'undefined') {
+      this.isMobile.set(window.innerWidth < 768);
+      this.isCollapsed.set(window.innerWidth < 768);
+    }
+  }
+
   setActive(index: number) {
     this.navItems.update(items =>
       items.map((item, i) => ({
@@ -170,6 +194,7 @@ export class SidebarComponent {
 
   toggleCollapse() {
     this.isCollapsed.update(val => !val);
+    this.isMobile.update(val => !val);
   }
 
   saftHTML(value: string) {
