@@ -1,9 +1,19 @@
-import { Component } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { Component, computed, effect, signal } from '@angular/core';
+
+interface Asset {
+  name: string;
+  ip: string;
+  risk: string;
+  riskColor: 'red' | 'orange' | 'yellow' | 'green' | 'blue';
+}
 
 @Component({
   selector: 'app-contextual-risk',
   standalone: true,
-  imports: [],
+  imports: [
+    NgClass
+  ],
   template: `
     <div class=" bg-white w-full max-w-7xl mx-auto">
     <h2 class="text-xl font-semibold text-green-700 my-3">Lorem Ipsum Dolor Sit</h2>
@@ -18,60 +28,55 @@ import { Component } from '@angular/core';
             </div>
 
             <div class="space-y-3">
-                <!-- Asset Row 1 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 items-center py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
-                    <div class="flex items-center space-x-3 col-span-1 ">
-                        <!-- Icon -->
-                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <img src="assets/icons/server-sm.svg" />
-
+                @for (asset of assetsForCurrentPage(); track asset.ip) {
+                    <!-- Asset Row 1 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 items-center py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                        <div class="flex items-center space-x-3 col-span-1 ">
+                            <!-- Icon -->
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <img src="assets/icons/server-sm.svg" />
+    
+                            </div>
+                            <!-- Text -->
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 leading-tight">{{ asset.name }}</p>
+                                <p class="text-xs text-gray-500">{{ asset.ip }}</p>
+                            </div>
                         </div>
-                        <!-- Text -->
-                        <div>
-                            <p class="text-sm font-medium text-gray-700 leading-tight">Loremipsumdolorsit</p>
-                            <p class="text-xs text-gray-500">192.168.1.1</p>
-                        </div>
-                    </div>
-                    <!-- Risk Badge -->
-                    <div class="col-span-1 text-right">
-                        <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">
-                            Critical
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Asset Row 2 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 items-center py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
-                    <div class="flex items-center space-x-3 col-span-1">
-                        <!-- Icon -->
-                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <img src="assets/icons/server-sm.svg" />
-                          
-                        </div>
-                        <!-- Text -->
-                        <div>
-                            <p class="text-sm font-medium text-gray-700 leading-tight">Loremipsumdolorsit002</p>
-                            <p class="text-xs text-gray-500">192.168.1.2</p>
+                        <!-- Risk Badge -->
+                        <div class="col-span-1 text-right">
+                            <span class="inline-block px-3 py-1 text-xs font-bold rounded-full " [ngClass]="getBadgeClasses(asset.riskColor)">
+                                {{ asset.risk }}
+                            </span>
                         </div>
                     </div>
-                    <!-- Risk Badge -->
-                    <div class="col-span-1 text-right">
-                        <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">
-                            Critical
-                        </span>
-                    </div>
-                </div>
+                } @empty {
+                    <div class="text-center py-6 text-gray-500">No assets found.</div>
+                }
             </div>
 
             <!-- Pagination/Status Footer -->
             <div class="flex justify-center items-center mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 cursor-pointer text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                <span>Showing 1-2 of 2</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 cursor-pointer text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+                <button
+                    (click)="goToPrevPage()" 
+                    [disabled]="isFirstPage()"
+                    class="flex items-center p-1 rounded-md transition-colors"
+                    [ngClass]="{'cursor-pointer hover:text-gray-800 text-gray-600': !isFirstPage(), 'cursor-not-allowed opacity-50 text-gray-400': isFirstPage()}"
+                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 cursor-pointer text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <span>{{ paginationStatus() }}</span>
+                <button 
+                (click)="goToNextPage()" 
+                [disabled]="isLastPage()"
+                class="flex items-center p-1 rounded-md transition-colors"
+                [ngClass]="{'cursor-pointer hover:text-gray-800 text-gray-600': !isLastPage(), 'cursor-not-allowed opacity-50 text-gray-400': isLastPage()}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 cursor-pointer text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
             </div>
         </div>
 
@@ -126,4 +131,72 @@ import { Component } from '@angular/core';
 })
 export class ContextualRiskComponent {
 
+    private allAssets = signal<Asset[]>([
+        { name: 'Loremipsumdolorsit', ip: '192.168.1.1', risk: 'Critical', riskColor: 'red' },
+        { name: 'Loremipsumdolorsit002', ip: '192.168.1.2', risk: 'Critical', riskColor: 'red' },
+        { name: 'Database-Server-01', ip: '10.0.0.10', risk: 'High', riskColor: 'orange' },
+        { name: 'Web-Proxy-03', ip: '172.16.5.25', risk: 'Medium', riskColor: 'yellow' },
+        { name: 'File-Storage-09', ip: '192.168.50.3', risk: 'Low', riskColor: 'green' },
+        { name: 'Backup-Node-A', ip: '10.0.1.44', risk: 'Critical', riskColor: 'red' },
+        { name: 'Test-VM-Alpha', ip: '10.1.1.1', risk: 'Low', riskColor: 'green' },
+        { name: 'DMZ-Firewall', ip: '1.1.1.1', risk: 'High', riskColor: 'orange' },
+        { name: 'Web-App-Service', ip: '172.16.1.100', risk: 'Medium', riskColor: 'yellow' },
+        { name: 'Load-Balancer-01', ip: '10.0.0.5', risk: 'Low', riskColor: 'green' },
+    ]);
+    
+    currentPage = signal(1);
+    pageSize = signal(2);
+
+    totalPages = computed(() => {
+        return Math.ceil(this.allAssets().length / this.pageSize());
+    });
+
+    isFirstPage = computed(() => this.currentPage() === 1);
+
+    isLastPage = computed(() => this.currentPage() === this.totalPages());
+
+    assetsForCurrentPage = computed(() => {
+        const start = (this.currentPage() - 1) * this.pageSize();
+        const end = start + this.pageSize();
+        return this.allAssets().slice(start, end);
+    });
+
+    paginationStatus = computed(() => {
+        const total = this.allAssets().length;
+        if (total === 0) return 'No assets to display';
+        
+        const start = (this.currentPage() - 1) * this.pageSize() + 1;
+        const end = Math.min(this.currentPage() * this.pageSize(), total);
+        return `Showing ${start}-${end} of ${total}`;
+    });
+
+    goToPrevPage() {
+        this.currentPage.update(page => Math.max(1, page - 1));
+    }
+
+    goToNextPage() {
+        this.currentPage.update(page => Math.min(this.totalPages(), page + 1));
+    }
+
+    getBadgeClasses(color: Asset['riskColor']) {
+        const baseClasses = 'bg-red-100 text-red-700'; 
+        switch (color) {
+        case 'red': return 'bg-red-100/70 text-red-700';
+        case 'orange': return 'bg-orange-100/70 text-orange-700';
+        case 'yellow': return 'bg-yellow-100/70 text-yellow-700';
+        case 'green': return 'bg-green-100/70 text-green-700';
+        default: return baseClasses;
+        }
+    }
+
+    getBgColor(color: Asset['riskColor']) {
+        switch (color) {
+        case 'red': return 'bg-red-600';
+        case 'orange': return 'bg-orange-600';
+        case 'yellow': return 'bg-yellow-600';
+        case 'green': return 'bg-green-600';
+        case 'blue': return 'bg-blue-600';
+        default: return 'bg-gray-600';
+        }
+    }
 }
