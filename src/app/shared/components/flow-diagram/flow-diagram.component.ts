@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RiskTagComponent } from "../risk-tag/risk-tag.component";
+import { PaginationService } from '@app-shared/services/pagination.service';
 
 @Component({
   selector: 'app-flow-diagram',
@@ -154,7 +155,7 @@ import { RiskTagComponent } from "../risk-tag/risk-tag.component";
                 <div class="flex flex-col justify-between h-52 flex-shrink-0">
                     
                     <!-- 4. Final Node: Loremipsumdolorsit (Top) -->
-                    <div class="node-wrapper relative group flex flex-col items-center flex-shrink-0 w-24">
+                    <div class="node-wrapper relative group flex flex-col items-center flex-shrink-0 w-32">
                         <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center relative">
                           <svg class="absolute top-0 right-0" width="15" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M0 12.5C0 5.59644 5.59644 0 12.5 0C19.4036 0 25 5.59644 25 12.5C25 19.4036 19.4036 25 12.5 25C5.59644 25 0 19.4036 0 12.5Z" fill="#E6372B"/>
@@ -170,8 +171,8 @@ import { RiskTagComponent } from "../risk-tag/risk-tag.component";
 
                           <img src="assets/icons/server.svg" alt="Setting Icon" class="h-8 w-8" />
                         </div>
-                        <span class="mt-1 text-xs font-medium text-gray-700">Loremipsumdolorsit</span>
-                        <span class="text-xs font-light text-gray-500">192.168.1.1</span>
+                        <span class="mt-1 text-xs font-medium text-gray-700">{{visibleAssets()[0].name}}</span>
+                        <span class="text-xs font-light text-gray-500">{{visibleAssets()[0].ip}}</span>
                         
                         <!-- Popover 3 -->
                         <div class="popover absolute top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl p-4 text-xs left-1/2 transform -translate-x-1/2">
@@ -201,8 +202,8 @@ import { RiskTagComponent } from "../risk-tag/risk-tag.component";
                                 </svg>
                               </div>
                               <div>
-                                  <p class="text-xs font-medium text-gray-700 leading-tight">Loremipsumdolorsit</p>
-                                  <p class="text-xs font-light text-gray-500">192.168.1.1</p>
+                                  <p class="text-xs font-medium text-gray-700 leading-tight">{{visibleAssets()[0].name}}</p>
+                                  <p class="text-xs font-light text-gray-500">{{visibleAssets()[0].ip}}</p>
                               </div>
                             </div>
                           
@@ -219,7 +220,7 @@ import { RiskTagComponent } from "../risk-tag/risk-tag.component";
                     </div>
 
                     <!-- 5. Final Node: Loremipsumdolorsit002 (Bottom) -->
-                    <div class="node-wrapper mt-6 relative group flex flex-col items-center flex-shrink-0 w-24">
+                    <div class="node-wrapper mt-6 relative group flex flex-col items-center flex-shrink-0 w-32">
                       <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center relative">
                         <svg class="absolute top-0 right-0" width="15" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M0 12.5C0 5.59644 5.59644 0 12.5 0C19.4036 0 25 5.59644 25 12.5C25 19.4036 19.4036 25 12.5 25C5.59644 25 0 19.4036 0 12.5Z" fill="#E6372B"/>
@@ -235,8 +236,8 @@ import { RiskTagComponent } from "../risk-tag/risk-tag.component";
 
                         <img src="assets/icons/server.svg" alt="Setting Icon" class="h-8 w-8" />
                       </div>
-                      <span class="mt-1 text-xs font-medium text-gray-700">Loremipsumdolorsit002</span>
-                      <span class="text-xs font-light text-gray-500">192.168.1.2</span>
+                      <span class="mt-1 text-xs font-medium text-gray-700">{{visibleAssets()[1].name}}</span>
+                      <span class="text-xs font-light text-gray-500">{{visibleAssets()[1].ip}}</span>
                       
                       <!-- Popover 3 -->
                       <div class="popover absolute top mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl p-4 text-xs left-1/2 transform -translate-x-2/2">
@@ -257,8 +258,8 @@ import { RiskTagComponent } from "../risk-tag/risk-tag.component";
                                 <img src="assets/icons/server-sm.svg" alt="Setting Icon" />
                               </div>
                               <div>
-                                  <p class="text-xs font-medium text-gray-700 leading-tight">Loremipsumdolorsit</p>
-                                  <p class="text-xs font-light text-gray-500">192.168.1.1</p>
+                                  <p class="text-xs font-medium text-gray-700 leading-tight">{{visibleAssets()[1].name}}</p>
+                                  <p class="text-xs font-light text-gray-500">{{visibleAssets()[1].ip}}</p>
                               </div>
                             </div>
                           
@@ -315,5 +316,7 @@ import { RiskTagComponent } from "../risk-tag/risk-tag.component";
   }`
 })
 export class FlowDiagramComponent {
+ public paginationService = inject(PaginationService);
 
+  visibleAssets = this.paginationService.assetsForCurrentPage;
 }

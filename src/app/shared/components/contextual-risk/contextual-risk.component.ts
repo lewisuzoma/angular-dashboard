@@ -1,7 +1,8 @@
 import { NgClass } from '@angular/common';
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { PaginationService } from '@app-shared/services/pagination.service';
 
-interface Asset {
+export interface Asset {
   name: string;
   ip: string;
   risk: string;
@@ -28,7 +29,7 @@ interface Asset {
             </div>
 
             <div class="space-y-3">
-                @for (asset of assetsForCurrentPage(); track asset.ip) {
+                @for (asset of visibleAssets(); track asset.ip) {
                     <!-- Asset Row 1 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 items-center py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
                         <div class="flex items-center space-x-3 col-span-1 ">
@@ -58,21 +59,21 @@ interface Asset {
             <!-- Pagination/Status Footer -->
             <div class="flex justify-center items-center mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
                 <button
-                    (click)="goToPrevPage()" 
-                    [disabled]="isFirstPage()"
+                    (click)="paginationService.goToPrevPage()" 
+                    [disabled]="paginationService.isFirstPage()"
                     class="flex items-center p-1 rounded-md transition-colors"
-                    [ngClass]="{'cursor-pointer hover:text-gray-800 text-gray-600': !isFirstPage(), 'cursor-not-allowed opacity-50 text-gray-400': isFirstPage()}"
+                    [ngClass]="{'cursor-pointer hover:text-gray-800 text-gray-600': !paginationService.isFirstPage(), 'cursor-not-allowed opacity-50 text-gray-400': paginationService.isFirstPage()}"
                     >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 cursor-pointer text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
-                <span>{{ paginationStatus() }}</span>
+                <span>{{ paginationService.paginationStatus() }}</span>
                 <button 
-                (click)="goToNextPage()" 
-                [disabled]="isLastPage()"
+                (click)="paginationService.goToNextPage()" 
+                [disabled]="paginationService.isLastPage()"
                 class="flex items-center p-1 rounded-md transition-colors"
-                [ngClass]="{'cursor-pointer hover:text-gray-800 text-gray-600': !isLastPage(), 'cursor-not-allowed opacity-50 text-gray-400': isLastPage()}">
+                [ngClass]="{'cursor-pointer hover:text-gray-800 text-gray-600': !paginationService.isLastPage(), 'cursor-not-allowed opacity-50 text-gray-400': paginationService.isLastPage()}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 cursor-pointer text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
@@ -90,19 +91,19 @@ interface Asset {
                 <ul class="space-y-4 text-sm text-gray-700 md:text-xs">
                     <li class="flex items-center">
                         <span class="w-2 h-2 rounded-full bg-red-600 mr-2"></span>
-                        <span class="font-bold mr-1">2</span> Critical
+                        <span class="font-bold mr-1">{{paginationService.riskSummary().Critical}}</span> Critical
                     </li>
                     <li class="flex items-center">
                         <span class="w-2 h-2 rounded-full bg-red-400 mr-2"></span>
-                        <span class="font-bold mr-1">0</span> High
+                        <span class="font-bold mr-1">{{paginationService.riskSummary().High}}</span> High
                     </li>
                     <li class="flex items-center">
                         <span class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
-                        <span class="font-bold mr-1">0</span> Medium
+                        <span class="font-bold mr-1">{{paginationService.riskSummary().Medium}}</span> Medium
                     </li>
                     <li class="flex items-center">
                         <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                        <span class="font-bold mr-1">0</span> Low
+                        <span class="font-bold mr-1">{{paginationService.riskSummary().Low}}</span> Low
                     </li>
                 </ul>
 
@@ -117,7 +118,7 @@ interface Asset {
                                 stroke-dasharray="282.74" 
                                 stroke-dashoffset="0" /> <!-- 282.74 is the circumference for r=45 -->
                     </svg>
-                    <span class="text-2xl font-semibold text-gray-700 z-10">2</span>
+                    <span class="text-2xl font-semibold text-gray-700 z-10">{{paginationService.riskSummary().Total}}</span>
                 </div>
             </div>
 
@@ -131,52 +132,57 @@ interface Asset {
 })
 export class ContextualRiskComponent {
 
-    private allAssets = signal<Asset[]>([
-        { name: 'Loremipsumdolorsit', ip: '192.168.1.1', risk: 'Critical', riskColor: 'red' },
-        { name: 'Loremipsumdolorsit002', ip: '192.168.1.2', risk: 'Critical', riskColor: 'red' },
-        { name: 'Database-Server-01', ip: '10.0.0.10', risk: 'High', riskColor: 'orange' },
-        { name: 'Web-Proxy-03', ip: '172.16.5.25', risk: 'Medium', riskColor: 'yellow' },
-        { name: 'File-Storage-09', ip: '192.168.50.3', risk: 'Low', riskColor: 'green' },
-        { name: 'Backup-Node-A', ip: '10.0.1.44', risk: 'Critical', riskColor: 'red' },
-        { name: 'Test-VM-Alpha', ip: '10.1.1.1', risk: 'Low', riskColor: 'green' },
-        { name: 'DMZ-Firewall', ip: '1.1.1.1', risk: 'High', riskColor: 'orange' },
-        { name: 'Web-App-Service', ip: '172.16.1.100', risk: 'Medium', riskColor: 'yellow' },
-        { name: 'Load-Balancer-01', ip: '10.0.0.5', risk: 'Low', riskColor: 'green' },
-    ]);
+    public paginationService = inject(PaginationService);
+
+    visibleAssets = this.paginationService.assetsForCurrentPage;
+
     
-    currentPage = signal(1);
-    pageSize = signal(2);
+    // private allAssets = signal<Asset[]>([
+    //     { name: 'Loremipsumdolorsit', ip: '192.168.1.1', risk: 'Critical', riskColor: 'red' },
+    //     { name: 'Loremipsumdolorsit002', ip: '192.168.1.2', risk: 'Critical', riskColor: 'red' },
+    //     { name: 'Database-Server-01', ip: '10.0.0.10', risk: 'High', riskColor: 'orange' },
+    //     { name: 'Web-Proxy-03', ip: '172.16.5.25', risk: 'Medium', riskColor: 'yellow' },
+    //     { name: 'File-Storage-09', ip: '192.168.50.3', risk: 'Low', riskColor: 'green' },
+    //     { name: 'Backup-Node-A', ip: '10.0.1.44', risk: 'Critical', riskColor: 'red' },
+    //     { name: 'Test-VM-Alpha', ip: '10.1.1.1', risk: 'Low', riskColor: 'green' },
+    //     { name: 'DMZ-Firewall', ip: '1.1.1.1', risk: 'High', riskColor: 'orange' },
+    //     { name: 'Web-App-Service', ip: '172.16.1.100', risk: 'Medium', riskColor: 'yellow' },
+    //     { name: 'Load-Balancer-01', ip: '10.0.0.5', risk: 'Low', riskColor: 'green' },
+    // ]);
+    
+    // currentPage = signal(1);
+    // pageSize = signal(2);
 
-    totalPages = computed(() => {
-        return Math.ceil(this.allAssets().length / this.pageSize());
-    });
+    // totalPages = computed(() => {
+    //     return Math.ceil(this.allAssets().length / this.pageSize());
+    // });
 
-    isFirstPage = computed(() => this.currentPage() === 1);
+    // isFirstPage = computed(() => this.currentPage() === 1);
 
-    isLastPage = computed(() => this.currentPage() === this.totalPages());
+    // isLastPage = computed(() => this.currentPage() === this.totalPages());
 
-    assetsForCurrentPage = computed(() => {
-        const start = (this.currentPage() - 1) * this.pageSize();
-        const end = start + this.pageSize();
-        return this.allAssets().slice(start, end);
-    });
+    // assetsForCurrentPage = computed(() => {
+    //     const start = (this.currentPage() - 1) * this.pageSize();
+    //     const end = start + this.pageSize();
+    //     return this.allAssets().slice(start, end);
+    // });
 
-    paginationStatus = computed(() => {
-        const total = this.allAssets().length;
-        if (total === 0) return 'No assets to display';
+    // paginationStatus = computed(() => {
+    //     const total = this.allAssets().length;
+    //     if (total === 0) return 'No assets to display';
         
-        const start = (this.currentPage() - 1) * this.pageSize() + 1;
-        const end = Math.min(this.currentPage() * this.pageSize(), total);
-        return `Showing ${start}-${end} of ${total}`;
-    });
+    //     const start = (this.currentPage() - 1) * this.pageSize() + 1;
+    //     const end = Math.min(this.currentPage() * this.pageSize(), total);
+    //     return `Showing ${start}-${end} of ${total}`;
+    // });
 
-    goToPrevPage() {
-        this.currentPage.update(page => Math.max(1, page - 1));
-    }
+    // goToPrevPage() {
+    //     this.currentPage.update(page => Math.max(1, page - 1));
+    // }
 
-    goToNextPage() {
-        this.currentPage.update(page => Math.min(this.totalPages(), page + 1));
-    }
+    // goToNextPage() {
+    //     this.currentPage.update(page => Math.min(this.totalPages(), page + 1));
+    // }
 
     getBadgeClasses(color: Asset['riskColor']) {
         const baseClasses = 'bg-red-100 text-red-700'; 
@@ -189,14 +195,4 @@ export class ContextualRiskComponent {
         }
     }
 
-    getBgColor(color: Asset['riskColor']) {
-        switch (color) {
-        case 'red': return 'bg-red-600';
-        case 'orange': return 'bg-orange-600';
-        case 'yellow': return 'bg-yellow-600';
-        case 'green': return 'bg-green-600';
-        case 'blue': return 'bg-blue-600';
-        default: return 'bg-gray-600';
-        }
-    }
 }
